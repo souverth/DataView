@@ -2,23 +2,19 @@
 import LoadingOverlay from '~/components/base/loading-overlay/LoadingOverlay.vue';
 import { useWorkspaceConnectionRoute } from '~/core/composables/useWorkspaceConnectionRoute';
 import { getDatabaseClientLabel } from '~/core/constants/database-backup';
-import { DatabaseClientType } from '~/core/constants/database-client-type';
-import { isDesktopApp } from '~/core/helpers/environment';
 import { useSchemaStore } from '~/core/stores';
 import { useManagementConnectionStore } from '~/core/stores/managementConnectionStore';
-import type { ExportOptions, NativeBackupToolName } from '~/core/types';
+import type { ExportOptions } from '~/core/types';
 import BackupProfileCard from '../components/BackupProfileCard.vue';
 import BackupRestoreUnsupportedAlert from '../components/BackupRestoreUnsupportedAlert.vue';
 import ExportOptionsForm from '../components/ExportOptionsForm.vue';
 import ImportFileDropzone from '../components/ImportFileDropzone.vue';
 import ImportOptionsForm from '../components/ImportOptionsForm.vue';
-import NativeToolSelector from '../components/NativeToolSelector.vue';
 import RestoreConfirmDialog from '../components/RestoreConfirmDialog.vue';
 import TransferProgressCard from '../components/TransferProgressCard.vue';
 import { useDatabaseExport } from '../hooks/useDatabaseExport';
 import { useDatabaseImport } from '../hooks/useDatabaseImport';
 import { useNativeBackupCapability } from '../hooks/useNativeBackupCapability';
-import { useNativeBackupToolSelection } from '../hooks/useNativeBackupToolSelection';
 import type {
   BackupRestoreSection,
   BackupRestoreTab,
@@ -57,7 +53,6 @@ const {
 } = useNativeBackupCapability(connectionType);
 
 const isRefreshing = ref(false);
-const desktopRuntimeSelectionEnabled = computed(() => isDesktopApp());
 
 const handleReload = async () => {
   isRefreshing.value = true;
@@ -77,14 +72,10 @@ const importAvailable = computed(
   () => capability.value?.importAvailable ?? false
 );
 const exportSectionEnabled = computed(
-  () =>
-    nativeBackupSupported.value &&
-    (exportAvailable.value || desktopRuntimeSelectionEnabled.value)
+  () => nativeBackupSupported.value && exportAvailable.value
 );
 const importSectionEnabled = computed(
-  () =>
-    nativeBackupSupported.value &&
-    (importAvailable.value || desktopRuntimeSelectionEnabled.value)
+  () => nativeBackupSupported.value && importAvailable.value
 );
 const supportMessage = computed(() => {
   if (capabilityError.value) {
@@ -246,45 +237,8 @@ const {
   reset: resetExport,
 } = useDatabaseExport(connectionData, capability);
 
-const buildToolChoices = (available: string[] = [], missing: string[] = []) =>
-  [...new Set([...available, ...missing])] as NativeBackupToolName[];
-
-const exportToolChoices = computed(() =>
-  buildToolChoices(
-    capability.value?.availableExportTools || [],
-    capability.value?.missingExportTools || []
-  )
-);
-const exportDetectedToolPaths = computed(
-  () => capability.value?.availableExportToolPaths || []
-);
-const {
-  selection: exportToolSelection,
-  filteredToolPaths: exportToolPaths,
-  runtimeSelection: exportRuntimeSelection,
-  canSubmit: canExportWithRuntime,
-} = useNativeBackupToolSelection(
-  exportDetectedToolPaths,
-  exportToolChoices,
-  desktopRuntimeSelectionEnabled
-);
-const openExportSaveDirectory = async () => {
-  const directoryPath = lastExport.value?.saveDirectoryPath;
-
-  if (!directoryPath || !window.electronAPI?.window.openPath) {
-    return;
-  }
-
-  await window.electronAPI.window.openPath(directoryPath);
-};
-
 const onExport = async (options: ExportOptions) => {
-  await exportDatabase(databaseName.value, {
-    options,
-    runtime: exportRuntimeSelection.value,
-    promptForSaveLocation: desktopRuntimeSelectionEnabled.value,
-    saveDirectoryPath: undefined,
-  });
+  await exportDatabase(databaseName.value, options);
 };
 
 // ─── Import ────────────────────────────────────────────────────────────────────
@@ -306,42 +260,6 @@ const {
   reset: resetImport,
 } = useDatabaseImport(connectionData, capability);
 
-const baseImportToolChoices = computed(() =>
-  buildToolChoices(
-    capability.value?.availableImportTools || [],
-    capability.value?.missingImportTools || []
-  )
-);
-const importToolChoices = computed(() => {
-  if (
-    connectionType.value !== DatabaseClientType.POSTGRES ||
-    !selectedFile.value?.name
-  ) {
-    return baseImportToolChoices.value;
-  }
-
-  return [
-    selectedFile.value.name.toLowerCase().endsWith('.dump')
-      ? 'pg_restore'
-      : 'psql',
-  ] as NativeBackupToolName[];
-});
-const importDetectedToolPaths = computed(() =>
-  (capability.value?.availableImportToolPaths || []).filter(toolPath =>
-    importToolChoices.value.includes(toolPath.tool)
-  )
-);
-const {
-  selection: importToolSelection,
-  filteredToolPaths: importToolPaths,
-  runtimeSelection: importRuntimeSelection,
-  canSubmit: canImportWithRuntime,
-} = useNativeBackupToolSelection(
-  importDetectedToolPaths,
-  importToolChoices,
-  desktopRuntimeSelectionEnabled
-);
-
 // ─── Restore confirm dialog ──────────────────────────────────────────────────────────
 const showRestoreConfirm = ref(false);
 
@@ -351,7 +269,7 @@ const onRestoreClick = () => {
 
 const onRestoreConfirmed = async () => {
   showRestoreConfirm.value = false;
-  await importDatabase(importRuntimeSelection.value);
+  await importDatabase();
 };
 
 const onRestoreCancelled = () => {
@@ -475,32 +393,15 @@ const onRestoreCancelled = () => {
             :status-message="exportStatusMessage || ''"
             :progress="exportProgress"
             :is-running="isExporting"
-            :action-label="
-              lastExport?.saveDirectoryPath && !isExporting ? 'Open' : undefined
-            "
-            @action="openExportSaveDirectory"
           />
 
           <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
             <div class="rounded-lg border p-4 space-y-4">
-              <NativeToolSelector
-                v-if="desktopRuntimeSelectionEnabled"
-                v-model="exportToolSelection"
-                title="Backup Driver"
-                description="Choose the exact executable OrcaQ should run for this backup job."
-                :detected-paths="exportToolPaths"
-                :tool-choices="exportToolChoices"
-                :disabled="isExporting"
-              />
-
               <ExportOptionsForm
                 :schemas="availableSchemas"
                 :schema-loading="isSchemaLoading"
                 :schema-error="schemaLoadError"
                 :loading="isExporting"
-                :disabled="
-                  desktopRuntimeSelectionEnabled && !canExportWithRuntime
-                "
                 :format-options="nativeBackupFormats"
                 :default-format="capability?.defaultExportFormat"
                 :tool-hint="nativeToolHint"
@@ -576,25 +477,11 @@ const onRestoreCancelled = () => {
                 @clear="clearSelectedFile"
               />
 
-              <NativeToolSelector
-                v-if="desktopRuntimeSelectionEnabled"
-                v-model="importToolSelection"
-                title="Restore Driver"
-                description="Choose the executable HeraQ should use to restore this backup artifact."
-                :detected-paths="importToolPaths"
-                :tool-choices="importToolChoices"
-                :disabled="isImporting"
-              />
-
               <ImportOptionsForm v-model="importOptions" />
 
               <Button
                 class="w-full"
-                :disabled="
-                  !selectedFile ||
-                  isImporting ||
-                  (desktopRuntimeSelectionEnabled && !canImportWithRuntime)
-                "
+                :disabled="!selectedFile || isImporting"
                 @click="onRestoreClick"
               >
                 <Icon

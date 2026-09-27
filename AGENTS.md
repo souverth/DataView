@@ -1,8 +1,7 @@
 # HeraQ / OrcaQ Agent Guide
 
 Orcaq is next-gen database client. Friendly, powerful
-This repo is a Nuxt 3 + Vue 3 + TypeScript with Electron
-desktop support.
+This repo is a Nuxt 3 + Vue 3 + TypeScript web app that runs in Docker.
 
 ## Repo Layout And Important Directories
 
@@ -22,8 +21,8 @@ desktop support.
   helpers, constants, stores, types, persistence abstractions, and contexts.
 - `server/` contains Nuxt server API routes and backend infrastructure for
   database adapters, drivers, metadata, query execution, Redis, and AI features.
-- `electron/` contains the Electron desktop wrapper, persistence schema, and
-  desktop-specific implementation.
+- `docker/` contains the Dockerfiles and Compose definitions (production, dev,
+  demo databases). See `docker/README.md`.
 - `pages/` contains Nuxt file-based routes for workspaces, connections, ERD,
   schema management, raw query, and quick query.
 - `plugins/` contains Nuxt plugins. Be careful changing app initialization or
@@ -63,22 +62,19 @@ desktop support.
 
 ## How To Run The Project
 
-Commands are defined in `package.json`. This repo supports Bun, npm scripts, and
-Nuxt/Electron workflows.
+Commands are defined in `package.json`. The package manager is npm
+(`package-lock.json`). The supported runtime is Docker.
 
-- Install dependencies: `bun install` or the package-manager equivalent already
-  used by the workspace.
-- Run the web app locally: `bun run dev` or `bun run nuxt:dev`.
-- Build Nuxt: `bun run nuxt:build`.
-- Generate static output: `bun run nuxt:generate`.
-- Run Electron in development: `bun run electron:dev`.
-- Compile Electron TypeScript: `bun run electron:compile`.
-- Build/package Electron: `bun run electron:build`, `bun run electron:pack`, or
-  `bun run electron:build:mac-m`.
-- Run Storybook: `bun run storybook`.
-- Format all files: `bun run format`.
-- Check formatting: `bun run format:check`.
-- Typecheck: `bun run typecheck`.
+- Run with Docker: `docker compose up -d --build` (see `docker/README.md`).
+- Dev environment in Docker: `docker compose -f docker/compose.dev.yml up --build`.
+- Install dependencies locally: `npm install`.
+- Run the web app locally: `npm run dev` or `npm run nuxt:dev`.
+- Build Nuxt: `npm run nuxt:build`.
+- Generate static output: `npm run nuxt:generate`.
+- Run Storybook: `npm run storybook`.
+- Format all files: `npm run format`.
+- Check formatting: `npm run format:check`.
+- Typecheck: `npm run typecheck`.
 
 ## Tests And Verification
 
@@ -86,39 +82,46 @@ Nuxt/Electron workflows.
 > It contains the exact commands, fixture profiles, and decision rules.
 > Full reference: `docs/TESTING_GUIDE.md`
 
-- Typecheck: `bun run typecheck`.
-- Unit tests: `bun test:unit`
-- Nuxt/component tests: `bun test:nuxt`
-- All Vitest suites: `bun test:all`
-- API/integration tests (auto fixtures): `bun test:api`
-- API/integration tests (fixtures already up): `bun test:api:raw`
-- Playwright E2E (auto fixtures): `bun test:e2e`
-- Playwright E2E (fixtures already up): `bun test:e2e:raw`
-- Start fixtures: `bun test:fixtures:up`
-- Stop fixtures: `bun test:fixtures:down`
+- Typecheck: `npm run typecheck`.
+- Unit tests: `npm run test:unit`
+- Nuxt/component tests: `npm run test:nuxt`
+- All Vitest suites: `npm run test:all`
+- API/integration tests (auto fixtures): `npm run test:api`
+- API/integration tests (fixtures already up): `npm run test:api:raw`
+- Playwright E2E (auto fixtures): `npm run test:e2e`
+- Playwright E2E (fixtures already up): `npm run test:e2e:raw`
+- Start fixtures: `npm run test:fixtures:up`
+- Stop fixtures: `npm run test:fixtures:down`
 
 ## Verification Rules
 
-- Any source-code modification must pass `bun run typecheck` + `bun test:unit`.
+- Any source-code modification must pass `npm run typecheck` + `npm run test:unit`.
 - Do not claim a task is complete if type checking fails.
 - Run the smallest relevant test suite first — never start all fixtures to test a single DB.
-- Use `bun test:api:raw` / `bun test:e2e:raw` when fixtures are already running.
+- Use `npm run test:api:raw` / `npm run test:e2e:raw` when fixtures are already running.
 - Run broader suites only when the change scope requires it.
 - Clearly report:
   - executed commands
   - failing commands
   - whether failures are related to the current change
 
-## graphify
+## CodeGraph Setup
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+This project is indexed by CodeGraph (`.codegraph/`, local-only, gitignored).
+When the user types `/codegraph` or asks a structural code question, load the
+`codegraph` skill (`.codex/skills/codegraph/SKILL.md`). If `.codegraph/` is
+missing, run `codegraph init --yes` once; the Codex hooks in
+`.codex/hooks.json` keep it synced after that.
 
-When the user types `/graphify`, invoke the `skill` tool with `skill: "graphify"` before doing anything else.
+<!-- CODEGRAPH_START -->
 
-Rules:
+## CodeGraph
 
-- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+
+- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
+- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
+
+If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+
+<!-- CODEGRAPH_END -->

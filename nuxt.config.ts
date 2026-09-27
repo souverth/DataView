@@ -90,11 +90,6 @@ export default defineNuxtConfig({
       isDev: process.env.NODE_ENV !== 'production',
       sqlite3ConnectionsEnabled,
       version: pkg.version,
-      showDownloadBanner:
-        process.env.NUXT_PUBLIC_SHOW_DOWNLOAD_BANNER === 'true',
-      downloadLink:
-        process.env.NUXT_PUBLIC_DOWNLOAD_LINK ??
-        'https://github.com/cin12211/orca-q/releases',
       discordLink: process.env.NUXT_DISCORD_LINK ?? 'https://discord.gg/orcaq',
       donateLink: process.env.NUXT_DONATE_LINK ?? 'https://ko-fi.com/ynnic',
     },

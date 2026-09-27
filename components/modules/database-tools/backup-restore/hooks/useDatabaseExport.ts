@@ -8,18 +8,9 @@ import type {
   ExportFormat,
   ExportOptions,
   NativeBackupRuntimeCapability,
-  NativeBackupRuntimeSelection,
   StartDatabaseTransferResponse,
 } from '~/core/types';
 import { useDatabaseTransferJob } from './useDatabaseTransferJob';
-
-interface ExportExecutionRequest {
-  options: ExportOptions;
-  runtime?: NativeBackupRuntimeSelection;
-  promptForSaveLocation?: boolean;
-  saveDirectoryPath?: string;
-  saveFilePath?: string;
-}
 
 const sanitizeBackupFileSegment = (value: string) =>
   (value || 'database')
@@ -31,9 +22,6 @@ const sanitizeBackupFileSegment = (value: string) =>
 
 const createBackupTimestamp = () =>
   new Date().toISOString().replace(/[:.]/g, '-');
-
-const joinDirectoryAndFileName = (directoryPath: string, fileName: string) =>
-  `${directoryPath.replace(/[\\/]$/, '')}/${fileName}`;
 
 const formatDuration = (durationMs: number) => {
   if (!Number.isFinite(durationMs) || durationMs <= 0) {
@@ -55,8 +43,6 @@ export const useDatabaseExport = (
     fileName: string;
     duration: number;
     size: number;
-    saveDirectoryPath?: string;
-    saveFilePath?: string;
   } | null>(null);
   const transferJob = useDatabaseTransferJob();
   const { downloadStream, isDownloading, downloadedBytes } =
@@ -94,20 +80,14 @@ export const useDatabaseExport = (
    */
   const exportDatabase = async (
     databaseName: string,
-    request: ExportExecutionRequest
+    options: ExportOptions
   ): Promise<boolean> => {
     if (!connection.value) {
       error.value = 'No database connection provided';
       return false;
     }
 
-    const { options, runtime, promptForSaveLocation } = request;
-
-    if (
-      capability?.value &&
-      !capability.value.exportAvailable &&
-      !runtime?.executablePath?.trim()
-    ) {
+    if (capability?.value && !capability.value.exportAvailable) {
       error.value = capability.value.exportMessage;
       return false;
     }
@@ -116,29 +96,7 @@ export const useDatabaseExport = (
     lastExport.value = null;
 
     try {
-      let saveDirectoryPath = request.saveDirectoryPath?.trim() || undefined;
-      let saveFilePath = request.saveFilePath?.trim() || undefined;
       const fileName = `${sanitizeBackupFileSegment(databaseName)}_backup_${createBackupTimestamp()}${getExtension(connection.value?.type, options.format)}`;
-
-      if (
-        !saveDirectoryPath &&
-        !saveFilePath &&
-        promptForSaveLocation &&
-        window.electronAPI?.window.pickDirectory
-      ) {
-        const pickedPath = await window.electronAPI.window.pickDirectory();
-
-        if (!pickedPath) {
-          error.value = 'No save location was selected.';
-          return false;
-        }
-
-        saveDirectoryPath = pickedPath;
-      }
-
-      if (!saveFilePath && saveDirectoryPath) {
-        saveFilePath = joinDirectoryAndFileName(saveDirectoryPath, fileName);
-      }
 
       const response = await $fetch<StartDatabaseTransferResponse>(
         '/api/database-export/export-database',
@@ -148,7 +106,6 @@ export const useDatabaseExport = (
             ...getConnectionParams(connection.value),
             databaseName,
             options,
-            runtime,
           } as ExportDatabaseRequest & Record<string, unknown>,
         }
       );
@@ -168,11 +125,7 @@ export const useDatabaseExport = (
       const downloadResult = await downloadStream({
         url: snapshot.downloadUrl,
         method: 'GET',
-        filename: saveFilePath
-          ? fileName
-          : snapshot.downloadFileName || fileName,
-        saveFilePath,
-        openPath: saveDirectoryPath,
+        filename: snapshot.downloadFileName || fileName,
         successTitle: 'Backup is ready',
         getSuccessDescription: sizeBytes =>
           `${formatBytes(sizeBytes)} generated in ${formatDuration(snapshot.duration || 0)}.`,
@@ -184,11 +137,9 @@ export const useDatabaseExport = (
       }
 
       lastExport.value = {
-        fileName: saveFilePath ? fileName : snapshot.downloadFileName,
+        fileName: snapshot.downloadFileName,
         duration: snapshot.duration || 0,
         size: downloadResult.size || 0,
-        saveDirectoryPath,
-        saveFilePath,
       };
 
       return true;

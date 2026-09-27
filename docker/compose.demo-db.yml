@@ -1,0 +1,124 @@
+# =============================================================================
+# OrcaQ — Demo databases (opt-in via profiles, nothing starts by default)
+#
+#   docker compose --profile postgres up -d     # one engine
+#   docker compose --profile demo up -d         # every engine
+#
+# Profiles: postgres | mysql | mariadb | redis | mongodb | sql | demo
+# Seeded with the Sakila sample shared with test/fixtures (no duplicated data).
+# From OrcaQ inside Docker, connect with the service name as host, e.g.
+#   postgresql://orcaq:orcaq@postgres:5432/pagila
+# Host ports are offset (15432, 13306, ...) to avoid clashing with local DBs
+# and the test fixtures.
+# =============================================================================
+
+x-demo-credentials:
+  user: &demo-user ${ORCAQ_DEMO_DB_USER:-orcaq}
+  password: &demo-password ${ORCAQ_DEMO_DB_PASSWORD:-orcaq}
+
+services:
+  postgres:
+    profiles: [postgres, sql, demo]
+    image: docker.io/library/postgres:16-alpine
+    ports:
+      - '${ORCAQ_DEMO_POSTGRES_PORT:-15432}:5432'
+    environment:
+      POSTGRES_DB: pagila
+      POSTGRES_USER: *demo-user
+      POSTGRES_PASSWORD: *demo-password
+    volumes:
+      - demo-postgres-data:/var/lib/postgresql/data
+      - ../test/fixtures/containers/sql-init/postgres/00-bootstrap.sh:/docker-entrypoint-initdb.d/00-bootstrap.sh:ro
+      - ../test/fixtures/datasets/postgres/postgres-sakila-schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
+      - ../test/fixtures/datasets/postgres/postgres-sakila-insert-data-optimized.sql:/docker-entrypoint-initdb.d/20-data.sql:ro
+      - ../test/fixtures/containers/sql-init/postgres/99-grants.sh:/docker-entrypoint-initdb.d/99-grants.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mysql:
+    profiles: [mysql, sql, demo]
+    image: docker.io/library/mysql:8.4
+    ports:
+      - '${ORCAQ_DEMO_MYSQL_PORT:-13306}:3306'
+    environment:
+      MYSQL_DATABASE: sakila
+      MYSQL_USER: *demo-user
+      MYSQL_PASSWORD: *demo-password
+      MYSQL_ROOT_PASSWORD: ${ORCAQ_DEMO_DB_ROOT_PASSWORD:-root}
+    command: ['--mysql-native-password=ON', '--mysqlx=0']
+    volumes:
+      - demo-mysql-data:/var/lib/mysql
+      - ../test/fixtures/datasets/mysql/mysql-sakila-schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
+      - ../test/fixtures/datasets/mysql/mysql-sakila-insert-data-optimized.sql:/docker-entrypoint-initdb.d/20-data.sql:ro
+      - ../test/fixtures/containers/sql-init/mysql/99-grants.sh:/docker-entrypoint-initdb.d/99-grants.sh:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  mariadb:
+    profiles: [mariadb, sql, demo]
+    image: docker.io/library/mariadb:11.4
+    ports:
+      - '${ORCAQ_DEMO_MARIADB_PORT:-13307}:3306'
+    environment:
+      MARIADB_DATABASE: sakila
+      MARIADB_USER: *demo-user
+      MARIADB_PASSWORD: *demo-password
+      MARIADB_ROOT_PASSWORD: ${ORCAQ_DEMO_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - demo-mariadb-data:/var/lib/mysql
+      - ../test/fixtures/datasets/mysql/mysql-sakila-schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
+      - ../test/fixtures/datasets/mysql/mysql-sakila-insert-data-optimized.sql:/docker-entrypoint-initdb.d/20-data.sql:ro
+      - ../test/fixtures/containers/sql-init/mysql/99-grants.sh:/docker-entrypoint-initdb.d/99-grants.sh:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'mariadb-admin ping -h 127.0.0.1 -u$$MARIADB_USER -p$$MARIADB_PASSWORD --silent',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    profiles: [redis, demo]
+    image: docker.io/library/redis:7.4-alpine
+    ports:
+      - '${ORCAQ_DEMO_REDIS_PORT:-16379}:6379'
+    volumes:
+      - demo-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mongodb:
+    profiles: [mongodb, demo]
+    image: docker.io/library/mongo:7
+    ports:
+      - '${ORCAQ_DEMO_MONGODB_PORT:-27018}:27017'
+    volumes:
+      - demo-mongodb-data:/data/db
+    healthcheck:
+      test:
+        ['CMD', 'mongosh', '--quiet', '--eval', 'db.runCommand({ ping: 1 })']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  demo-postgres-data:
+  demo-mysql-data:
+  demo-mariadb-data:
+  demo-redis-data:
+  demo-mongodb-data:

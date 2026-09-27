@@ -12,12 +12,10 @@ import {
 } from '#components';
 import { TagManagementContainer } from '@/components/modules/environment-tag';
 import { useSettingsModal } from '~/core/contexts/useSettingsModal';
-import { isDesktopApp } from '~/core/helpers/environment';
 import {
   AgentConfig,
   AppearanceConfig,
   BackupRestoreConfig,
-  DesktopConfig,
   EditorConfig,
   QuickQueryConfig,
   TableAppearanceConfig,
@@ -26,7 +24,6 @@ import { SETTINGS_NAV_ITEMS } from '../constants';
 import { SettingsComponentKey } from '../types';
 
 const SETTINGS_COMPONENTS: Record<SettingsComponentKey, Component> = {
-  DesktopConfig,
   EditorConfig,
   QuickQueryConfig,
   AgentConfig,
@@ -36,9 +33,7 @@ const SETTINGS_COMPONENTS: Record<SettingsComponentKey, Component> = {
   EnvironmentTagsConfig: TagManagementContainer,
 };
 
-const settingNavs = SETTINGS_NAV_ITEMS.filter(
-  item => !item.desktopOnly || isDesktopApp()
-).map(item => ({
+const settingNavs = SETTINGS_NAV_ITEMS.map(item => ({
   ...item,
   component: item.componentKey ? SETTINGS_COMPONENTS[item.componentKey] : null,
 }));

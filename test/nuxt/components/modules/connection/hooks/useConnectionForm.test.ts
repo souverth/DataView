@@ -58,17 +58,8 @@ function createForm(overrides?: {
   });
 }
 
-function setElectronWindowApi(overrides?: {
-  pickSqliteFile?: ReturnType<typeof vi.fn>;
-}) {
-  Object.defineProperty(window, 'electronAPI', {
-    configurable: true,
-    value: {
-      window: {
-        pickSqliteFile: overrides?.pickSqliteFile || vi.fn(),
-      },
-    },
-  });
+function setSqliteFileConnectionsEnabled(isEnabled: boolean) {
+  useRuntimeConfig().public.sqlite3ConnectionsEnabled = isEnabled;
 }
 
 // ---------------------------------------------------------------------------
@@ -78,10 +69,7 @@ function setElectronWindowApi(overrides?: {
 describe('useConnectionForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    Object.defineProperty(window, 'electronAPI', {
-      configurable: true,
-      value: undefined,
-    });
+    setSqliteFileConnectionsEnabled(true);
   });
 
   // -- Initial state -------------------------------------------------------
@@ -305,7 +293,6 @@ describe('useConnectionForm', () => {
 
   it('sends filePath for SQLite file connections', async () => {
     mockHealthCheck.mockResolvedValue({ isConnectedSuccess: true });
-    setElectronWindowApi();
 
     const { connectionMethod, formData, dbType, handleTestConnection } =
       createForm();
@@ -516,8 +503,6 @@ describe('useConnectionForm', () => {
   });
 
   it('isFormValid is true for FILE method when filePath is provided', async () => {
-    setElectronWindowApi();
-
     const { isFormValid, formData, connectionName, dbType } = createForm();
 
     dbType.value = DatabaseClientType.SQLITE3;
@@ -528,7 +513,8 @@ describe('useConnectionForm', () => {
     expect(isFormValid.value).toBe(true);
   });
 
-  it('isFormValid is false for FILE method outside Electron', async () => {
+  it('isFormValid is false for FILE method when SQLite files are disabled', async () => {
+    setSqliteFileConnectionsEnabled(false);
     const { isFormValid, formData, connectionName, dbType } = createForm();
 
     dbType.value = DatabaseClientType.SQLITE3;
@@ -837,7 +823,6 @@ describe('useConnectionForm', () => {
 
   it('stores filePath and sqlite connection string for SQLite file connections', async () => {
     mockHealthCheck.mockResolvedValue({ isConnectedSuccess: true });
-    setElectronWindowApi();
 
     const onAddNew = vi.fn();
 
@@ -939,7 +924,8 @@ describe('useConnectionForm', () => {
     expect(connection.connectionString).toBeUndefined();
   });
 
-  it('reports a desktop-only error when testing SQLite outside Electron', async () => {
+  it('reports a disabled error when testing SQLite files that are turned off', async () => {
+    setSqliteFileConnectionsEnabled(false);
     const {
       dbType,
       formData,
@@ -956,7 +942,7 @@ describe('useConnectionForm', () => {
 
     expect(result).toBe(false);
     expect(testStatus.value).toBe('error');
-    expect(testErrorMessage.value).toContain('desktop app');
+    expect(testErrorMessage.value).toContain('disabled');
     expect(mockHealthCheck).not.toHaveBeenCalled();
   });
 });

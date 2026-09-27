@@ -34,7 +34,7 @@ export interface BackupData {
 
 export function createEmptyPersistData(): Record<PersistCollection, unknown[]> {
   // Query Builder UI state is intentionally excluded because it stays in
-  // localStorage on both web and Electron renderer.
+  // localStorage.
   return Object.fromEntries(
     PERSIST_COLLECTIONS.map(collection => [collection, []])
   ) as unknown as Record<PersistCollection, unknown[]>;

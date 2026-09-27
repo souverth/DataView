@@ -24,14 +24,6 @@ const {
   storageSetItemMock: vi.fn(),
 }));
 
-vi.mock('~/core/helpers/environment', () => ({
-  isElectron: () => false,
-}));
-
-vi.mock('~/core/persist/adapters/electron/primitives', () => ({
-  persistMergeAll: vi.fn(),
-}));
-
 vi.mock('~/core/persist/adapters/idb/primitives', () => ({
   idbMergeAll: idbMergeAllMock,
 }));

@@ -9,8 +9,6 @@
 <div align="center">
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![npx version](https://img.shields.io/npm/v/orcaq?label=npx)](https://www.npmjs.com/package/orcaq)
-[![Downloads](https://img.shields.io/npm/dm/orcaq?label=downloads)](https://www.npmjs.com/package/orcaq)
 [![GitHub stars](https://img.shields.io/github/stars/cin12211/orca-q?style=social)](https://github.com/cin12211/orca-q/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/cin12211/orca-q)](https://github.com/cin12211/orca-q/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/cin12211/orca-q)](https://github.com/cin12211/orca-q/pulls)
@@ -27,50 +25,29 @@
 
 ## Installation
 
-#### <img src="https://api.iconify.design/hugeicons:laptop.svg" width="22" alt="Desktop App icon" /> Desktop App
-
-The recommended to experience the full capabilities
-
-Download the latest build from [GitHub Releases](https://github.com/cin12211/orca-q/releases/latest).
-
-**Available for:** `macOS` (`.dmg`, `.zip`) · `Linux` (`.AppImage`, `.deb`) · `Windows` comming soon.
-
-#### <img src="https://api.iconify.design/logos:npm-icon.svg" width="22" alt="NPX icon" /> NPX
-
-Best for a quick local run without cloning the repo.
-
-```sh
-npx orcaq
-```
-
-Requires `Node.js >= 18`. OrcaQ starts on [http://localhost:9432](http://localhost:9432).
-
-> `npx` does not support SQLite file connections. Use the desktop app for that workflow.
-
-#### <img src="https://api.iconify.design/hugeicons:computer-terminal-01.svg" width="22" alt="Local Development icon" /> Local Development
-
-Best for contributing or running the source locally.
-
-```sh
-git clone https://github.com/cin12211/orca-q.git
-cd orcaq
-bun install
-npm run nuxt:dev
-```
+OrcaQ runs as a web app inside Docker.
 
 #### <img src="https://api.iconify.design/logos:docker-icon.svg" width="22" alt="Docker icon" /> Docker
 
-Best for a clean local deployment without installing Node.js tooling.
-
 ```sh
-docker run -d \
-  --name orcaq \
-  --restart unless-stopped \
-  -p 9432:9432 \
-  cinny09/orcaq:latest
+git clone https://github.com/cin12211/orca-q.git
+cd orca-q
+docker compose up -d --build                 # OrcaQ on http://localhost:9432
+docker compose --profile postgres up -d      # + demo PostgreSQL
 ```
 
-Open [http://localhost:9432](http://localhost:9432).
+SQLite files: put them in `./data/sqlite` and connect to `/data/sqlite/<file>.sqlite`.
+
+See [docker/README.md](docker/README.md) for the dev environment, demo databases, and all options.
+
+#### <img src="https://api.iconify.design/hugeicons:computer-terminal-01.svg" width="22" alt="Local Development icon" /> Local Development
+
+For contributing without Docker (`Node.js >= 18`):
+
+```sh
+npm install
+npm run dev                                  # http://localhost:3000
+```
 
 
 ## <img src="https://api.iconify.design/hugeicons:database.svg" width="22" alt="Database icon" /> Supported Databases
@@ -81,7 +58,7 @@ Open [http://localhost:9432](http://localhost:9432).
 | <img src="https://api.iconify.design/devicon:mysql.svg" width="16" alt="MySQL" /> MySQL | String, form | Connection test, raw query, minimum metadata and table browsing | Advanced roles, metrics, and instance insights remain unsupported |
 | <img src="https://api.iconify.design/devicon:mariadb.svg" width="16" alt="MariaDB" /> MariaDB | String, form | Connection test, raw query, minimum metadata and table browsing | Uses a distinct persisted `mariadb` type |
 | <img src="https://api.iconify.design/logos:oracle.svg" width="16" alt="Oracle" /> Oracle | String, form | Connection test, raw query, minimum metadata and table browsing | Structured form uses `serviceName` |
-| <img src="https://api.iconify.design/devicon:sqlite.svg" width="16" alt="SQLite" /> SQLite | File (desktop only), managed | Connection test, raw query, metadata and table browsing | Local files stay desktop-only; Cloudflare D1 and Turso reuse the SQL family path |
+| <img src="https://api.iconify.design/devicon:sqlite.svg" width="16" alt="SQLite" /> SQLite | File (inside the container), managed | Connection test, raw query, metadata and table browsing | Files are read from the container (mount `./data/sqlite`); Cloudflare D1 and Turso reuse the SQL family path |
 | Redis | String, form | Connection test, key browser, type-aware value inspection, workbench, analysis | SQL-only panels stay hidden for Redis sessions |
 Advanced database-administration features are still intentionally PostgreSQL-first unless a database-specific adapter exists.
 
@@ -90,7 +67,7 @@ Advanced database-administration features are still intentionally PostgreSQL-fir
 ### <img src="https://api.iconify.design/hugeicons:work.svg" width="20" alt="Workspace icon" /> Workspace & Connection Management
 
 - **Workspaces**: Organize related database connections into named workspaces with custom icons, descriptions, and last-opened tracking.
-- **Connections**: Create and manage PostgreSQL, MySQL, MariaDB, Oracle, and SQLite connections using form fields, connection strings, or desktop file-based SQLite setup.
+- **Connections**: Create and manage PostgreSQL, MySQL, MariaDB, Oracle, and SQLite connections using form fields, connection strings, or SQLite file paths inside the container.
 - **Security options**: Configure SSH tunnels, SSL modes, connection health checks, and environment tags with strict-mode confirmations for sensitive databases.
 
 ### <img src="https://api.iconify.design/hugeicons:grid-table.svg" width="20" alt="Explore icon" /> Exploration & Querying
@@ -122,7 +99,6 @@ Advanced database-administration features are still intentionally PostgreSQL-fir
 - **Custom layout system**: Use resizable sidebars, multiple panels, saved layout presets, and a status-bar-driven app shell.
 - **Settings**: Configure appearance, code editor behavior, table display, quick query options, AI providers, and environment tags from a unified settings area.
 - **App data backup**: Export and restore workspaces, connections, query files, settings, and AI chat history as app-level backup data.
-- **Desktop app enhancements**: Use SQLite file workflows, in-app updates, recent connections, and multi-window support in the Electron app.
 
 ## Contributing
 

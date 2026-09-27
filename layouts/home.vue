@@ -1,23 +1,11 @@
 <script setup lang="ts">
 import { cn } from '@/lib/utils';
-import ElectronUpdateIndicator from '~/components/modules/app-shell/status-bar/components/ElectronUpdateIndicator.vue';
 import { useSettingsModal } from '~/core/contexts/useSettingsModal';
-import { isDesktopApp, isMacOS, isPWA, isElectron } from '~/core/helpers';
+import { isPWA } from '~/core/helpers';
 
-const isDesktopMacWindow = computed(() => isDesktopApp() && isMacOS());
 const config = useRuntimeConfig();
 
-const onTitleBarDoubleClick = async () => {
-  if (!isDesktopMacWindow.value) {
-    return;
-  }
-
-  if (isElectron()) {
-    await (window as any).electronAPI.window.maximize();
-  }
-};
-
-const isAppVersion = computed(() => isElectron() || isPWA());
+const isAppVersion = computed(() => isPWA());
 const githubLink = config.public.githubLink;
 const discordLink = config.public.discordLink;
 const donateLink = config.public.donateLink;
@@ -29,15 +17,8 @@ const { openSettings } = useSettingsModal();
   <div
     :class="cn('w-full h-10.5 select-none pr-2 bg-sidebar flex justify-center')"
     v-if="isAppVersion"
-    @dblclick="onTitleBarDoubleClick"
   >
-    <div
-      :class="[
-        'flex w-full items-center gap-3 py-2 pr-2',
-        isDesktopMacWindow ? 'pl-[4.75rem]' : 'pl-3',
-      ]"
-      :data-electron-drag-region="isElectron() ? '' : undefined"
-    >
+    <div class="flex w-full items-center gap-3 py-2 pr-2 pl-3">
       <div class="flex min-w-0 flex-1 items-center gap-3">
         <div class="flex items-center space-x-2 pointer-events-none">
           <Avatar class="rounded-md!">
@@ -49,11 +30,9 @@ const { openSettings } = useSettingsModal();
         <span class="text-sm text-muted-foreground">
           v{{ config.public.version }}
         </span>
-
-        <ElectronUpdateIndicator side="bottom" align="end" />
       </div>
 
-      <div class="window-no-drag flex shrink-0 items-center gap-1">
+      <div class="flex shrink-0 items-center gap-1">
         <div class="flex items-center gap-1">
           <Button variant="ghost" size="xxs" as-child>
             <a :href="donateLink" target="_blank">

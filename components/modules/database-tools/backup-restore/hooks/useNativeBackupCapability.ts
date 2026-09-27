@@ -1,5 +1,4 @@
 import type { DatabaseClientType } from '~/core/constants/database-client-type';
-import { isDesktopApp } from '~/core/helpers/environment';
 import type { NativeBackupRuntimeCapability } from '~/core/types';
 
 export const useNativeBackupCapability = (
@@ -27,12 +26,7 @@ export const useNativeBackupCapability = (
     try {
       const response = await $fetch<NativeBackupRuntimeCapability>(
         '/api/database-backup/capability',
-        {
-          query: {
-            type,
-            discoverAll: isDesktopApp(),
-          },
-        }
+        { query: { type } }
       );
 
       if (currentRequestId !== requestId) {

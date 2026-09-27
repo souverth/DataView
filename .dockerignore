@@ -1,20 +1,8 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+# VCS & editors
+.git
+.github
+.husky
+.vscode
 .idea
 .DS_Store
 *.suo
@@ -23,9 +11,15 @@ dist-ssr
 *.sln
 *.sw?
 
+# AI agent tooling
+.claude
+.agent
+graphify-out
 
+# Dependencies (installed inside the image)
+node_modules
 
-# Nuxt dev/build outputs
+# Nuxt / build outputs
 .output
 .data
 .nuxt
@@ -33,32 +27,36 @@ dist-ssr
 .cache
 .vite
 dist
-
-# Node dependencies
-node_modules
+dist-ssr
 build
+out
+storybook-static
+tsconfig.tsbuildinfo
+
+# Local SQLite files mounted at runtime (docker/compose.yml)
+data
+
+# Tests & reports (demo DB seed data is bind-mounted by compose, not built in)
+coverage
+playwright-report
+test-results
+test/fixtures/datasets
 
 # Logs
 logs
 *.log
 
-# Misc
-.DS_Store
-
-# Local env files
+# Local data & env files
+.db
+*.local
 .env
 .env.*
 !.env.example
 
-tsconfig.tsbuildinfo
-
-
-# when build , copy all file in nuxt gen + electron-app 
-# copy to build-electron folder , then excuttion cd build-electron && run build then remove build file build-electron
-.electron-build
-.electron-out
-.db
-.git
+# Docker definitions don't need to be in the build context,
+# except the helper scripts copied by docker/Dockerfile.
 Dockerfile*
+docker/Dockerfile*
+docker/*.yml
+docker-compose*.yml
 .dockerignore
-coverage

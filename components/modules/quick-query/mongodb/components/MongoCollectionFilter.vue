@@ -91,7 +91,7 @@ interface PersistedMongoFilterState {
   rawMoreOptionsInput?: MongoQueryMoreOptionsRawInput;
 }
 
-// Filter state is UI-only and intentionally bypasses the backup / Electron
+// Filter state is UI-only and intentionally bypasses the backup / IndexedDB
 // persist contract, mirroring useTableQueryBuilder's QuickQuery equivalent.
 const loadPersistedState = () => {
   if (!props.persistKey) return;

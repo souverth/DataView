@@ -26,14 +26,12 @@ import { useTabManagement } from '~/core/composables/useTabManagement';
 import { useWorkspaceConnectionRoute } from '~/core/composables/useWorkspaceConnectionRoute';
 import { getConnectionCapabilityProfile } from '~/core/constants/connection-capabilities';
 import { DatabaseClientType } from '~/core/constants/database-client-type';
-import { isElectron } from '~/core/helpers';
 import {
   useManagementConnectionStore,
   useTabViewsStore,
   type TabView,
 } from '~/core/stores';
 import { EConnectionMethod } from '~/core/types/entities/connection.entity';
-import ElectronUpdateIndicator from '../../status-bar/components/ElectronUpdateIndicator.vue';
 import TabViewItem from './TabViewItem.vue';
 import TabViewOpenActions from './TabViewOpenActions.vue';
 
@@ -168,8 +166,6 @@ watchEffect(onCleanup => {
     dndFunction();
   });
 });
-
-const isElectronRuntime = computed(() => isElectron());
 </script>
 <template>
   <div
@@ -177,7 +173,6 @@ const isElectronRuntime = computed(() => isElectron());
       'w-full flex items-end h-full gap-2 mx-1 -mb-0.5 min-w-0 relative',
       isDragging ? 'bg-purple-50' : '',
     ]"
-    :data-electron-drag-region="isElectronRuntime ? '' : undefined"
   >
     <div
       class="flex h-full shrink-0 items-center gap-1 bg-sidebar-accent/50 pr-1"
@@ -198,10 +193,6 @@ const isElectronRuntime = computed(() => isElectron());
         </TooltipTrigger>
         <TooltipContent>Open or reuse sample.sql</TooltipContent>
       </Tooltip>
-    </div>
-
-    <div class="window-no-drag flex h-full shrink-0 items-center pl-1">
-      <ElectronUpdateIndicator side="bottom" align="start" />
     </div>
 
     <div ref="tabBarBodyRef" class="flex h-full min-w-0 flex-1 items-end">

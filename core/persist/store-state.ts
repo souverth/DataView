@@ -36,6 +36,6 @@ export type {
 
 // ── Web-renderer-only constants ───────────────────────────────────────────────
 // These are NOT in normalize.ts — they reference localStorage keys used by
-// the legacy migration system and are meaningless in the Electron main process.
+// the legacy migration system.
 
 export const LEGACY_APP_CONFIG_STORAGE_KEY = 'app-config-store';

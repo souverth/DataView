@@ -1,16 +1,15 @@
 /**
  * Single source of truth for AppConfig / AgentState normalize logic.
  *
- * ZERO browser-specific imports — this file compiles in both the Nuxt
- * renderer context AND the Electron main process (electron/tsconfig.json).
+ * ZERO browser-specific imports — keep this file framework-agnostic so it
+ * stays safe to import from any context (renderer, server, tests).
  *
  * Consumers:
  *  - core/persist/store-state.ts  (web renderer — imports & re-exports)
- *  - electron/persist/utils/normalizeState.ts  (Electron main — thin re-export)
  *
  * ALL enums, interfaces, default constants, helpers, and normalize functions
  * are defined here. Do NOT import from ~/components/ or ~/core/stores/ —
- * those pull in browser-bundled code that crashes the Electron main process.
+ * those pull in browser-bundled code.
  */
 
 // ── Enums ─────────────────────────────────────────────────────────────────────

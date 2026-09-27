@@ -29,12 +29,6 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     componentKey: SettingsComponentKey.AgentConfig,
   },
   {
-    name: 'Desktop',
-    icon: 'hugeicons:computer',
-    componentKey: SettingsComponentKey.DesktopConfig,
-    desktopOnly: true,
-  },
-  {
     name: 'Environment Tags',
     icon: 'hugeicons:tag-01',
     componentKey: SettingsComponentKey.EnvironmentTagsConfig,

@@ -8,8 +8,6 @@ export interface StreamingDownloadOptions {
   body?: unknown;
   filename: string;
   contentType?: string;
-  saveFilePath?: string;
-  openPath?: string;
   successTitle?: string;
   getSuccessDescription?: (sizeBytes: number) => string;
 }
@@ -53,8 +51,6 @@ export function useStreamingDownload() {
       body,
       filename,
       contentType,
-      saveFilePath,
-      openPath,
       successTitle,
       getSuccessDescription,
     } = options;
@@ -118,47 +114,29 @@ export function useStreamingDownload() {
       }
 
       const fileBytes = combineChunks(chunks, receivedLength);
-      const electronWindowApi =
-        typeof window !== 'undefined' ? window.electronAPI?.window : undefined;
+      const blob = new Blob([fileBytes], {
+        type:
+          contentType ||
+          response.headers.get('Content-Type') ||
+          'application/octet-stream',
+      });
 
-      if (saveFilePath && electronWindowApi?.writeFile) {
-        await electronWindowApi.writeFile(saveFilePath, fileBytes);
-      } else {
-        const blob = new Blob([fileBytes], {
-          type:
-            contentType ||
-            response.headers.get('Content-Type') ||
-            'application/octet-stream',
-        });
-
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(blobUrl);
-      }
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
 
       const sizeKBFormatted = formatBytes(receivedLength);
       toast.success(successTitle || `Exported ${filename}`, {
         id: toastId,
         description:
           getSuccessDescription?.(receivedLength) ||
-          (saveFilePath
-            ? `${sizeKBFormatted} saved to ${saveFilePath}`
-            : `${sizeKBFormatted} downloaded`),
+          `${sizeKBFormatted} downloaded`,
         position: 'bottom-right',
-        action:
-          openPath && electronWindowApi?.openPath
-            ? {
-                label: 'Open',
-                onClick: () => {
-                  void electronWindowApi.openPath(openPath);
-                },
-              }
-            : undefined,
       });
 
       return { success: true, size: receivedLength };

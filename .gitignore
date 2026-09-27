@@ -54,15 +54,11 @@ logs
 tsconfig.tsbuildinfo
 
 
-# when build , copy all file in nuxt gen + electron-app 
-# copy to build-electron folder , then excuttion cd build-electron && run build then remove build file build-electron
-.electron-build
-.electron-out
 .db
-.electron-logs
 
-# NPX package build output
-npx-package/.output
+# Local SQLite files mounted into the Docker container (docker/compose.yml)
+/data/
+
 tauri-runtime-dist
 *storybook.log
 storybook-static
@@ -84,8 +80,7 @@ out/
 
 .sqlite3
 
-# Package manager lockfiles (generated locally in some workflows)
-package-lock.json
+# Other package managers' lockfiles (npm's package-lock.json is committed)
 yarn.lock
 pnpm-lock.yaml
 

@@ -21,11 +21,6 @@ describe('environment helpers', () => {
     setNavigator(originalNavigator);
   });
 
-  it('isDesktopApp returns boolean', () => {
-    const v = env.isDesktopApp();
-    expect(typeof v).toBe('boolean');
-  });
-
   it('isPWA returns boolean', () => {
     const v = env.isPWA();
     expect(typeof v).toBe('boolean');

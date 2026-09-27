@@ -1,0 +1,34 @@
+# syntax=docker/dockerfile:1.7
+# =============================================================================
+# OrcaQ — Development image (nuxt dev + hot reload)
+# Source code is bind-mounted by docker/compose.dev.yml; this image only holds
+# node_modules compiled for Linux so they never clash with the host's install.
+# =============================================================================
+
+ARG NODE_IMAGE=node:22-alpine3.22
+
+FROM ${NODE_IMAGE}
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+  python3 make g++ \
+  git \
+  postgresql17-client \
+  mariadb-client \
+  sqlite
+
+COPY package.json package-lock.json .npmrc ./
+# --ignore-scripts skips lifecycle hooks; native drivers are rebuilt explicitly.
+RUN --mount=type=cache,target=/root/.npm \
+  npm ci --ignore-scripts --no-audit --no-fund \
+  && npm rebuild sqlite3 better-sqlite3
+
+RUN mkdir -p /data/sqlite
+
+ENV NODE_OPTIONS="--max-old-space-size=8192" \
+  NUXT_TELEMETRY_DISABLED=1
+
+EXPOSE 3000 24678
+
+CMD ["npm", "run", "nuxt:dev"]

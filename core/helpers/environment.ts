@@ -1,6 +1,6 @@
 /**
  * Detect the runtime environment.
- * Provides helpers to identify PWA and desktop contexts.
+ * Provides helpers to identify PWA and macOS contexts.
  */
 
 export function isMacOS(): boolean {
@@ -16,19 +16,6 @@ export function isMacOS(): boolean {
   }
 
   return /mac/i.test(navigator.userAgent) || /mac/i.test(navigator.platform);
-}
-
-export const isDesktopApp = (): boolean => isElectron();
-
-export function isElectron(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  return (
-    typeof (window as Window & { electronAPI?: unknown }).electronAPI ===
-    'object'
-  );
 }
 
 export const isPWA = (): boolean => {

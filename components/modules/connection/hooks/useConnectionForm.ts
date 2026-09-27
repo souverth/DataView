@@ -9,10 +9,13 @@ import {
 import dayjs from 'dayjs';
 import { DatabaseClientType } from '~/core/constants/database-client-type';
 import { uuidv4 } from '~/core/helpers';
-import { isElectron } from '~/core/helpers/environment';
 import type { Connection } from '~/core/stores';
 import { useEnvironmentTagStore } from '~/core/stores';
-import { DEFAULT_DB_PORTS } from '../constants';
+import {
+  DEFAULT_DB_PORTS,
+  isSqlite3ConnectionsEnabled,
+  SQLITE_FILE_PATH_PLACEHOLDER,
+} from '../constants';
 import {
   connectionService,
   type ConnectionHealthCheckBody,
@@ -104,11 +107,6 @@ const buildSqliteConnectionString = (filePath: string) => {
   return `sqlite3://${prefix}${normalizedPath}`;
 };
 
-const getFileNameStem = (filePath: string) => {
-  const name = filePath.split(/[\\/]/).pop() || '';
-  return name.replace(/\.(sqlite3?|db3?)$/i, '') || name;
-};
-
 export function useConnectionForm(props: {
   open: MaybeRefOrGetter<boolean>;
   editingConnection: MaybeRefOrGetter<Connection | null>;
@@ -171,16 +169,14 @@ export function useConnectionForm(props: {
   const availableConnectionMethods = computed(() =>
     getSupportedConnectionMethods(dbType.value)
   );
-  const isElectronRuntime = computed(() => isElectron());
+  const runtimeConfig = useRuntimeConfig();
+  // SQLite file paths are resolved on the server (inside the container),
+  // so the deployment flag decides whether they are allowed at all.
+  const isSqliteFileEnabled = computed(() =>
+    isSqlite3ConnectionsEnabled(runtimeConfig.public.sqlite3ConnectionsEnabled)
+  );
   const isFileMethod = computed(
     () => connectionMethod.value === EConnectionMethod.FILE
-  );
-  const canPickSqliteFile = computed(
-    () =>
-      dbType.value === DatabaseClientType.SQLITE3 &&
-      isElectronRuntime.value &&
-      typeof window !== 'undefined' &&
-      typeof window.electronAPI?.window.pickSqliteFile === 'function'
   );
   const usesServiceName = computed(
     () => getStructuredTargetKey(dbType.value) === 'serviceName'
@@ -402,11 +398,11 @@ export function useConnectionForm(props: {
   const handleTestConnection = async () => {
     if (
       connectionMethod.value === EConnectionMethod.FILE &&
-      !isElectronRuntime.value
+      !isSqliteFileEnabled.value
     ) {
       testStatus.value = 'error';
       testErrorMessage.value =
-        'SQLite file connections are available only in the desktop app.';
+        'SQLite file connections are disabled in this deployment.';
       testErrorHint.value = '';
       testErrorDetail.value = '';
       return false;
@@ -521,30 +517,10 @@ export function useConnectionForm(props: {
       case DatabaseClientType.SNOWFLAKE:
         return 'snowflake://username:password@account.snowflakecomputing.com:443/database';
       case DatabaseClientType.SQLITE3:
-        return '/Users/you/data/app.sqlite';
+        return SQLITE_FILE_PATH_PLACEHOLDER;
       default:
         return '';
     }
-  };
-
-  const pickSqliteFile = async () => {
-    if (!canPickSqliteFile.value) {
-      return;
-    }
-
-    const selectedPath = await window.electronAPI?.window.pickSqliteFile();
-
-    if (!selectedPath) {
-      return;
-    }
-
-    formData.filePath = selectedPath;
-
-    if (!editingConnection.value && connectionName.value === 'my-abc-db') {
-      connectionName.value = getFileNameStem(selectedPath);
-    }
-
-    resetTestState();
   };
 
   const isFormValid = computed(() => {
@@ -555,7 +531,7 @@ export function useConnectionForm(props: {
     }
 
     if (connectionMethod.value === EConnectionMethod.FILE) {
-      return isElectronRuntime.value && !!formData.filePath;
+      return isSqliteFileEnabled.value && !!formData.filePath.trim();
     }
 
     if (connectionMethod.value === EConnectionMethod.MANAGED) {
@@ -716,10 +692,8 @@ export function useConnectionForm(props: {
     structuredTargetLabel,
     structuredTargetPlaceholder,
     canUseNetworkOptions,
-    canPickSqliteFile,
     isFileMethod,
     isFormValid,
-    pickSqliteFile,
     resetForm,
   };
 }

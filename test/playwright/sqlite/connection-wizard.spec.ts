@@ -236,42 +236,8 @@ test.describe('US7 — Cloudflare D1 Managed Connection Flow', () => {
   });
 });
 
-test.describe('US5 — Electron-Gated SQLite UI', () => {
+test.describe('US5 — SQLite File Path Input', () => {
   test.beforeEach(async ({ page }, testInfo) => {
-    await page.addInitScript(() => {
-      window.electronAPI = {
-        persist: {
-          getAll: async () => [],
-          getOne: async () => null,
-          find: async () => [],
-          upsert: async (_collection, _id, value) => value,
-          delete: async () => [],
-          replaceAll: async () => undefined,
-          mergeAll: async () => undefined,
-        },
-        updater: {
-          check: async () => null,
-          download: async () => undefined,
-          install: async () => undefined,
-          onUpdateAvailable: () => () => undefined,
-          onUpToDate: () => () => undefined,
-          onProgress: () => () => undefined,
-          onReady: () => () => undefined,
-          onError: () => () => undefined,
-        },
-        window: {
-          minimize: async () => undefined,
-          maximize: async () => undefined,
-          close: async () => undefined,
-          pickSqliteFile: async () => '/tmp/playwright-sqlite.sqlite',
-          getStoragePath: async () => '/tmp',
-          openStoragePath: async () => undefined,
-          resetAllData: async () => undefined,
-          onOpenSettings: () => () => undefined,
-        },
-      } as typeof window.electronAPI;
-    });
-
     const workspaceName = `SQLite Workspace ${Date.now()}-${testInfo.retry}`;
     const workspacesPage = new WorkspacesPage(page);
     await workspacesPage.goto();
@@ -279,9 +245,7 @@ test.describe('US5 — Electron-Gated SQLite UI', () => {
     await workspacesPage.openWorkspace(workspaceName);
   });
 
-  test('Electron runtime exposes the SQLite file tab and picker flow', async ({
-    page,
-  }) => {
+  test('SQLite file tab accepts a server-side file path', async ({ page }) => {
     const connectionModal = new ConnectionModalPage(page);
 
     await connectionModal.clickAddConnection();
@@ -291,9 +255,8 @@ test.describe('US5 — Electron-Gated SQLite UI', () => {
 
     await expect(connectionModal.databaseFileTab).toBeVisible();
     await expect(connectionModal.managedSqliteTab).toBeVisible();
-    await expect(connectionModal.browseSqliteButton).toBeVisible();
 
-    await connectionModal.clickBrowseSqliteFile();
-    await connectionModal.expectFilePathValue('/tmp/playwright-sqlite.sqlite');
+    await connectionModal.filePathInput.fill('/data/sqlite/playwright.sqlite');
+    await connectionModal.expectFilePathValue('/data/sqlite/playwright.sqlite');
   });
 });

@@ -293,7 +293,7 @@ export const useTableQueryBuilder = ({
 
   const getPersistedKey = () => {
     // Query Builder state is UI-only and intentionally bypasses the backup /
-    // Electron persist contract. It stays in renderer localStorage on all platforms.
+    // IndexedDB persist contract. It stays in localStorage.
     return LocalStorageManager.queryBuilderKey(
       workspaceId?.value ?? '',
       connectionId?.value ?? '',

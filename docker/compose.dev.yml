@@ -1,0 +1,35 @@
+# =============================================================================
+# OrcaQ — Development environment (nuxt dev + hot reload)
+#
+#   docker compose -f docker/compose.dev.yml up --build
+#   docker compose -f docker/compose.dev.yml --profile postgres up --build
+#
+# After changing package.json / package-lock.json, rebuild and renew node_modules:
+#   docker compose -f docker/compose.dev.yml up --build --renew-anon-volumes
+# =============================================================================
+
+name: orcaq-dev
+
+include:
+  - compose.demo-db.yml
+
+services:
+  orcaq-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - '${ORCAQ_DEV_PORT:-3000}:3000'
+      - '${ORCAQ_DEV_HMR_PORT:-24678}:24678'
+    environment:
+      # Bind mounts from Windows/macOS hosts don't emit inotify events.
+      CHOKIDAR_USEPOLLING: 'true'
+      CHOKIDAR_INTERVAL: '1000'
+    volumes:
+      - ..:/app
+      - ${ORCAQ_SQLITE_DIR:-../data/sqlite}:/data/sqlite
+      # Keep Linux-built deps and build caches inside the container so they
+      # never mix with the host's node_modules / .nuxt.
+      - /app/node_modules
+      - /app/.nuxt
+      - /app/.output

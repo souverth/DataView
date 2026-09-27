@@ -8,7 +8,7 @@ IMAGE="cinny09/orcaq"
 echo "Building version: $VERSION"
 
 # Build with version
-docker build --platform=linux/amd64 -t $IMAGE:$VERSION .
+docker build --platform=linux/amd64 -f docker/Dockerfile -t $IMAGE:$VERSION .
 
 # Tag as latest
 docker tag $IMAGE:$VERSION $IMAGE:latest

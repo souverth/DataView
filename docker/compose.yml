@@ -1,0 +1,21 @@
+# =============================================================================
+# OrcaQ — Production app service
+# Included by the root docker-compose.yml; see docker/README.md.
+# OrcaQ is stateless: connections/workspaces live in the browser storage.
+# =============================================================================
+
+services:
+  orcaq:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ${ORCAQ_IMAGE:-orcaq:local}
+    restart: unless-stopped
+    ports:
+      - '${ORCAQ_PORT:-9432}:9432'
+    environment:
+      NUXT_PUBLIC_SQLITE3_CONNECTIONS_ENABLED: ${NUXT_PUBLIC_SQLITE3_CONNECTIONS_ENABLED:-true}
+      NUXT_AMPLITUDE_API_KEY: ${NUXT_AMPLITUDE_API_KEY:-}
+    volumes:
+      # Drop .sqlite files into ./data/sqlite, then connect to /data/sqlite/<file>.
+      - ${ORCAQ_SQLITE_DIR:-../data/sqlite}:/data/sqlite

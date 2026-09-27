@@ -1,34 +1,7 @@
 /**
- * Factory that returns the correct storage implementation based on runtime platform.
- *
- * Platform resolution:
- *   isElectron() == true  → IPC-proxy wrappers around existing electron adapters (renderer → main via IPC; main uses SQLite)
- *   isElectron() == false → IDB entity storage singletons (localforage / IndexedDB)
+ * Factory that builds the storage APIs used by the Pinia stores.
+ * All data lives in the browser: IDB entity storage singletons (localforage / IndexedDB).
  */
-import { isElectron } from '~/core/helpers/environment';
-import {
-  agentElectronAdapter,
-  appConfigElectronAdapter,
-  connectionElectronAdapter,
-  environmentTagElectronAdapter,
-  quickQueryLogsElectronAdapter,
-  rowQueryFilesElectronAdapter,
-  tabViewsElectronAdapter,
-  workspaceElectronAdapter,
-  workspaceStateElectronAdapter,
-} from '~/core/persist/adapters/electron';
-import {
-  persistDelete,
-  persistFind,
-  persistGetAll as electronPersistGetAll,
-  persistReplaceAll,
-  type PersistFilter,
-} from '~/core/persist/adapters/electron/primitives';
-import {
-  normalizeAppConfigState,
-  normalizeAgentState,
-} from '~/core/persist/store-state';
-import type { MigrationState } from '~/core/types/entities/migration-state.entity';
 import {
   workspaceStorage,
   connectionStorage,
@@ -43,9 +16,11 @@ import {
 } from './entities';
 import type { StorageApis } from './types';
 
-// ── Browser (IDB) path ────────────────────────────────────────────────────────
-
-function createIDBStorageApis(): StorageApis {
+/**
+ * Returns the storage implementation.
+ * Call this once at store initialization — do NOT call on every operation.
+ */
+export function createStorageApis(): StorageApis {
   return {
     workspaceStorage: {
       getAll: () => workspaceStorage.getAll(),
@@ -102,101 +77,4 @@ function createIDBStorageApis(): StorageApis {
       clear: () => migrationStateStorage.clear(),
     },
   };
-}
-
-// ── Electron renderer (IPC proxy) path ───────────────────────────────────────
-
-function createElectronStorageApis(): StorageApis {
-  return {
-    workspaceStorage:
-      workspaceElectronAdapter as unknown as StorageApis['workspaceStorage'],
-    connectionStorage:
-      connectionElectronAdapter as unknown as StorageApis['connectionStorage'],
-    workspaceStateStorage:
-      workspaceStateElectronAdapter as unknown as StorageApis['workspaceStateStorage'],
-
-    tabViewStorage: {
-      getAll: () => tabViewsElectronAdapter.getAll(),
-      getByContext: ctx => tabViewsElectronAdapter.getByContext(ctx),
-      create: tab => tabViewsElectronAdapter.create(tab as never),
-      delete: id => tabViewsElectronAdapter.delete({ id }) as Promise<never>,
-      deleteByProps: props =>
-        tabViewsElectronAdapter.delete(props) as Promise<void>,
-      bulkDeleteByProps: async propsArray => {
-        await Promise.all(
-          propsArray.map(p => tabViewsElectronAdapter.delete(p))
-        );
-      },
-      replaceAll: async tabs => {
-        await persistReplaceAll(
-          'tabViews',
-          tabs as unknown as Record<string, unknown>[]
-        );
-      },
-    },
-
-    quickQueryLogStorage: {
-      getAll: () => quickQueryLogsElectronAdapter.getAll(),
-      getByContext: ctx => quickQueryLogsElectronAdapter.getByContext(ctx),
-      create: log => quickQueryLogsElectronAdapter.create(log),
-      delete: props => quickQueryLogsElectronAdapter.delete(props),
-    },
-
-    rowQueryFileStorage:
-      rowQueryFilesElectronAdapter as unknown as StorageApis['rowQueryFileStorage'],
-    environmentTagStorage:
-      environmentTagElectronAdapter as unknown as StorageApis['environmentTagStorage'],
-
-    appConfigStorage: {
-      get: async () => {
-        const data = await appConfigElectronAdapter.get();
-        return data
-          ? normalizeAppConfigState(data)
-          : normalizeAppConfigState({});
-      },
-      save: async state => {
-        await appConfigElectronAdapter.save(state);
-      },
-      delete: () => appConfigElectronAdapter.delete(),
-    },
-
-    agentStorage: {
-      get: async () => {
-        const data = await agentElectronAdapter.get();
-        return data ? normalizeAgentState(data) : normalizeAgentState({});
-      },
-      save: async state => {
-        await agentElectronAdapter.save(state);
-      },
-      delete: () => agentElectronAdapter.delete(),
-    },
-
-    migrationStateStorage: {
-      get: () =>
-        electronPersistGetAll<{ id: string; names: string[] }>(
-          'migrationState'
-        ).then(records => (records[0] ?? null) as MigrationState | null),
-      save: async names => {
-        await persistReplaceAll('migrationState', [
-          { id: 'applied-migrations', names },
-        ]);
-      },
-      clear: async () => {
-        await persistReplaceAll('migrationState', []);
-      },
-    },
-  };
-}
-
-// ── Public factory ─────────────────────────────────────────────────────────────
-
-/**
- * Returns the correct storage implementation based on runtime platform.
- * Call this once at store initialization — do NOT call on every operation.
- */
-export function createStorageApis(): StorageApis {
-  if (isElectron()) {
-    return createElectronStorageApis();
-  }
-  return createIDBStorageApis();
 }

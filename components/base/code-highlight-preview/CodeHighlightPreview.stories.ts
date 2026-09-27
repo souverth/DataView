@@ -137,14 +137,14 @@ export const JsonPayload: Story = {
 export const BashCommands: Story = {
   args: {
     language: 'bash',
-    code: `# Install the Orca Query desktop application dependencies
-bun install
- 
-# Build static outputs and compile TypeScript bundles
-bun run nuxt:generate && bun run electron:compile
- 
-# Launch Electron wrapper in desktop development mode
-bun run electron:dev --environment=staging`,
+    code: `# Build and start Orca Query with Docker Compose
+docker compose up -d --build
+
+# Start the development environment with hot reload
+docker compose -f docker/compose.dev.yml up --build
+
+# Follow the application logs
+docker compose logs -f orcaq`,
   },
 };
 

@@ -138,6 +138,9 @@ export const getDatabaseSupportByType = (type: DatabaseClientType) => {
   return databaseSupports.find(e => e.type === normalizedType);
 };
 
+// Matches the SQLite volume mounted by docker/compose.yml (./data/sqlite:/data/sqlite).
+export const SQLITE_FILE_PATH_PLACEHOLDER = '/data/sqlite/app.sqlite';
+
 export const isSqlite3ConnectionsEnabled = (value: unknown) => {
   return value !== false && value !== 'false' && value !== '0';
 };

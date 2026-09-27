@@ -74,10 +74,6 @@ export const PERSIST_COLLECTIONS = [
 
 export type PersistCollection = (typeof PERSIST_COLLECTIONS)[number];
 
-// Query Builder state stays in localStorage for both web and Electron renderer,
-// so Electron persist collections are the same set used by backup/import flows.
-export type ElectronPersistCollection = PersistCollection;
-
 export const PERSIST_IDB_STORES = {
   appConfig: APP_CONFIG_IDB,
   agentState: AGENT_STATE_IDB,

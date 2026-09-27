@@ -21,6 +21,7 @@ import {
   databaseSupports,
   isSqlite3ConnectionsEnabled,
   isSqliteConnectionDisabled,
+  SQLITE_FILE_PATH_PLACEHOLDER,
 } from '../constants';
 import { useConnectionForm } from '../hooks/useConnectionForm';
 import { EConnectionMethod, EManagedSqliteProvider } from '../types';
@@ -75,9 +76,7 @@ const {
   structuredTargetLabel,
   structuredTargetPlaceholder,
   canUseNetworkOptions,
-  canPickSqliteFile,
   isFormValid,
-  pickSqliteFile,
   resetForm,
 } = useConnectionForm({
   open: () => props.open,
@@ -370,29 +369,18 @@ watch(testStatus, status => {
                     />
                     SQLite File <span class="text-destructive">*</span>
                   </Label>
-                  <div class="flex gap-2">
-                    <Input
-                      id="file-path"
-                      placeholder="/Users/you/data/app.sqlite"
-                      v-model="formData.filePath"
-                      :readonly="canPickSqliteFile"
-                    />
-                    <Button
-                      v-if="canPickSqliteFile"
-                      type="button"
-                      variant="outline"
-                      @click="pickSqliteFile"
-                    >
-                      Browse
-                    </Button>
-                  </div>
+                  <Input
+                    id="file-path"
+                    :placeholder="SQLITE_FILE_PATH_PLACEHOLDER"
+                    v-model="formData.filePath"
+                    :disabled="!sqlite3ConnectionsEnabled"
+                  />
                   <p class="text-xs text-muted-foreground">
-                    <template v-if="canPickSqliteFile">
-                      Choose a local SQLite database file from the desktop app.
-                    </template>
-                    <template v-else-if="sqlite3ConnectionsEnabled">
-                      Enter a SQLite file path that this app runtime can read.
-                      In hosted web deployments, this path is on the server.
+                    <template v-if="sqlite3ConnectionsEnabled">
+                      Enter the path of a SQLite file inside the OrcaQ
+                      container. With Docker Compose, files placed in
+                      <code>./data/sqlite</code> are available under
+                      <code>/data/sqlite</code>.
                     </template>
                     <template v-else>
                       SQLite file connections are disabled in this deployment.

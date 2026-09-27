@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { useHotkeys } from '~/core/composables/useHotKeys';
-import { isMacOS, isPWA, isElectron, isDesktopApp } from '~/core/helpers';
+import { isPWA } from '~/core/helpers';
 import { useAppConfigStore } from '~/core/stores/appConfigStore';
 import { useTabViewsStore } from '~/core/stores/useTabViewsStore';
 import { ActivityBarHorizontal } from '../../activity-bar';
-import {
-  getTabViewMinWidth,
-  DESKTOP_MAC_TITLEBAR_INSET,
-} from '../tabViewContainerLayout';
+import { getTabViewMinWidth } from '../tabViewContainerLayout';
 import TabViews from './TabViews.vue';
 
 const props = defineProps<{
@@ -24,13 +21,11 @@ const { isPrimarySidebarCollapsed, isSecondSidebarCollapsed } =
   storeToRefs(appConfigStore);
 
 const isPWAApp = computed(() => isPWA());
-const isDesktopMacWindow = computed(() => isDesktopApp() && isMacOS());
 
 const minWidth = computed(() => {
   return getTabViewMinWidth({
     primarySideBarWidth: props.primarySideBarWidth,
     sidebarWidthPercentage: appConfigStore.layoutSize[0],
-    isDesktopMacWindow: isDesktopMacWindow.value,
   });
 });
 
@@ -38,16 +33,6 @@ const isAccessRightPanel = computed(() => {
   if (route.meta.notAllowRightPanel) return false;
   return true;
 });
-
-const onTitleBarDoubleClick = async () => {
-  if (!isDesktopMacWindow.value) {
-    return;
-  }
-
-  if (isElectron()) {
-    await (window as any).electronAPI.window.maximize();
-  }
-};
 
 // Tab keyboard shortcuts
 useHotkeys([
@@ -76,18 +61,12 @@ useHotkeys([
       'w-screen h-9 select-none border-b pr-2 bg-sidebar-accent/50!',
 
       isPWAApp && isPrimarySidebarCollapsed ? 'pl-[6rem]' : '',
-      isDesktopMacWindow && 'pl-[4.75rem]',
       isPWAApp && 'h-10.5 header-tab-view-pwa',
     ]"
-    @dblclick="onTitleBarDoubleClick"
-    :data-electron-drag-region="isElectron() ? '' : undefined"
   >
-    <div
-      class="flex justify-between items-center h-full"
-      :data-electron-drag-region="isElectron() ? '' : undefined"
-    >
+    <div class="flex justify-between items-center h-full">
       <div
-        class="window-no-drag flex items-center gap-1 h-full px-1"
+        class="flex items-center gap-1 h-full px-1"
         :style="{
           minWidth,
           justifyContent: !isPrimarySidebarCollapsed
@@ -103,7 +82,6 @@ useHotkeys([
         <div
           :class="['flex justify-center w-full']"
           v-if="!isPrimarySidebarCollapsed"
-          :data-electron-drag-region="isElectron() ? '' : undefined"
         >
           <ActivityBarHorizontal />
         </div>
@@ -132,7 +110,7 @@ useHotkeys([
 
       <TabViews />
 
-      <div class="window-no-drag flex items-center gap-2">
+      <div class="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger as-child>
             <Button

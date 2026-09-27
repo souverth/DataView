@@ -85,10 +85,6 @@ export class ConnectionModalPage {
     return this.page.locator('#file-path');
   }
 
-  get browseSqliteButton(): Locator {
-    return this.page.getByRole('button', { name: /^browse$/i });
-  }
-
   get d1ProviderButton(): Locator {
     return this.page.getByRole('button', { name: /cloudflare d1/i });
   }
@@ -261,10 +257,6 @@ export class ConnectionModalPage {
     if (opts.branchName) {
       await this.tursoBranchNameInput.fill(opts.branchName);
     }
-  }
-
-  async clickBrowseSqliteFile() {
-    await this.browseSqliteButton.click();
   }
 
   async clickTestConnection() {

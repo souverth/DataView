@@ -428,8 +428,8 @@ const contextMenuItems: ContextMenuItem[] = [
                   >Local Storage Decryption Keys</AccordionTrigger
                 >
                 <AccordionContent class="text-xs text-muted-foreground pb-2">
-                  All passwords and credentials stored inside the Electron app
-                  are securely encrypted locally via AES-256 keys.
+                  All passwords and credentials stored inside OrcaQ are securely
+                  encrypted locally via AES-256 keys.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
