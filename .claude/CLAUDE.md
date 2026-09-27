@@ -1,6 +1,5 @@
-# graphify
-- **graphify** (`.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
-When the user types `/graphify`, invoke the Skill tool with `skill: "graphify"` before doing anything else.
+# codegraph
+- **codegraph** (`.claude/skills/codegraph/SKILL.md`) - code intelligence over the `.codegraph/` index (explore, callers, impact, affected tests). Trigger: `/codegraph` or any structural code question.
 
 # Agent Rules (from .agent/rules/)
 Apply these always-on rules on every request:
@@ -22,3 +21,14 @@ Apply these always-on rules on every request:
 
 # Skills
 41 skills available in `.claude/skills/`. Trigger the matching one when the request matches its description (vue, nuxt, pinia, postgres-expert, testing-expert, etc.). Run `ls .claude/skills/` to enumerate.
+
+<!-- CODEGRAPH_START -->
+## CodeGraph
+
+In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+
+- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
+- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
+
+If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+<!-- CODEGRAPH_END -->

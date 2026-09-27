@@ -1,12 +1,22 @@
 {
   "hooks": {
-    "PreToolUse": [
+    "UserPromptSubmit": [
       {
-        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "graphify hook-check"
+            "command": "codegraph.cmd prompt-hook"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codegraph.cmd sync --quiet",
+            "timeout": 60
           }
         ]
       }

@@ -2,7 +2,10 @@
   "servers": {
     "shadcnVue": {
       "command": "npx",
-      "args": ["shadcn-vue@latest", "mcp"],
+      "args": [
+        "shadcn-vue@latest",
+        "mcp"
+      ],
       "type": "stdio"
     },
     "nuxt": {
@@ -11,7 +14,9 @@
     },
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"],
+      "args": [
+        "@playwright/mcp@latest"
+      ],
       "type": "stdio"
     },
     "context7": {
@@ -33,5 +38,15 @@
       "description": "API key for Context7 (get it from context7.com/dashboard)",
       "password": true
     }
-  ]
+  ],
+  "mcpServers": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": [
+        "serve",
+        "--mcp"
+      ]
+    }
+  }
 }
