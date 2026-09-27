@@ -180,25 +180,6 @@ For external/live databases (enabled when environment variables are set):
 
 ---
 
-## CI/CD
-
-| Workflow         | Trigger      | What it runs                                     |
-| ---------------- | ------------ | ------------------------------------------------ |
-| `unit-tests.yml` | push / PR    | `test:unit` + `test:nuxt`                        |
-| `api-tests.yml`  | PR to main   | `test:api:raw` (provisions fixtures in job)      |
-| `e2e.yml`        | push to main | One job per DB, each starts only its own fixture |
-
-Each CI E2E job starts only the fixture it needs:
-
-```yaml
-# e.g. e2e-postgres job
-- bash scripts/test-services/start-fixtures.sh --profile postgres
-- playwright test --project postgres
-- bash scripts/test-services/stop-fixtures.sh --profile postgres
-```
-
----
-
 ## Troubleshooting
 
 **Fixtures not ready — timeout**
