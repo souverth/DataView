@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { cn } from '@/lib/utils';
-import { useSettingsModal } from '~/core/contexts/useSettingsModal';
 import { isPWA } from '~/core/helpers';
 
 const config = useRuntimeConfig();
 
 const isAppVersion = computed(() => isPWA());
-const githubLink = config.public.githubLink;
-const discordLink = config.public.discordLink;
-const donateLink = config.public.donateLink;
-
-const { openSettings } = useSettingsModal();
 </script>
 
 <template>
@@ -31,69 +25,10 @@ const { openSettings } = useSettingsModal();
           v{{ config.public.version }}
         </span>
       </div>
-
-      <div class="flex shrink-0 items-center gap-1">
-        <div class="flex items-center gap-1">
-          <Button variant="ghost" size="xxs" as-child>
-            <a :href="donateLink" target="_blank">
-              <Icon name="hugeicons:coffee-01" class="size-4!" />
-              Buy me a coffee
-            </a>
-          </Button>
-          <Button variant="ghost" size="xxs" as-child>
-            <a :href="discordLink" target="_blank">
-              <Icon name="hugeicons:discord" class="size-4!" /> Discord
-            </a>
-          </Button>
-          <Button variant="ghost" size="xxs" as-child>
-            <a :href="githubLink" target="_blank">
-              <Icon name="hugeicons:github" class="size-4!" /> GitHub ⭐️
-            </a>
-          </Button>
-          <Button variant="ghost" size="xxs" @click="openSettings()">
-            <Icon name="hugeicons:settings-01" class="size-4!" />
-          </Button>
-        </div>
-      </div>
     </div>
   </div>
 
   <div class="h-full overflow-y-auto flex flex-col">
-    <div
-      v-if="!isAppVersion"
-      class="flex items-center justify-between border-b border-border py-2 px-2"
-    >
-      <div class="flex items-center space-x-2">
-        <Avatar class="rounded-md!">
-          <AvatarImage src="/logo.png" alt="@unovue" />
-        </Avatar>
-
-        <p class="text-2xl font-medium">orcaq</p>
-      </div>
-
-      <div class="flex items-center gap-1">
-        <Button variant="ghost" size="xxs" as-child>
-          <a :href="donateLink" target="_blank">
-            <Icon name="hugeicons:coffee-01" class="size-4!" />
-            Buy me a coffee
-          </a>
-        </Button>
-        <Button variant="ghost" size="xxs" as-child>
-          <a :href="discordLink" target="_blank">
-            <Icon name="hugeicons:discord" class="size-4!" /> Discord
-          </a>
-        </Button>
-        <Button variant="ghost" size="xxs" as-child>
-          <a :href="githubLink" target="_blank">
-            <Icon name="hugeicons:github" class="size-4!" /> GitHub ⭐️
-          </a>
-        </Button>
-        <Button variant="ghost" size="xxs" @click="openSettings()">
-          <Icon name="hugeicons:settings-01" class="size-4!" />
-        </Button>
-      </div>
-    </div>
-
     <slot />
   </div>
 </template>

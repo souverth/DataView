@@ -125,7 +125,6 @@
     "codemirror": "^6.0.2",
     "dayjs": "^1.11.13",
     "dependency-cruiser": "^17.3.8",
-    "driver.js": "^1.4.0",
     "dt-sql-parser": "^4.3.1",
     "echarts": "^5.6.0",
     "fake-indexeddb": "^6.2.5",

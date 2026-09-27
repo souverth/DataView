@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useSettingsModal } from '~/core/contexts/useSettingsModal';
+
+const search = defineModel<string>('search', { default: '' });
 
 defineProps<{
   isShowButtonCreate: boolean;
@@ -7,20 +11,22 @@ defineProps<{
 }>();
 
 const emit = defineEmits(['create', 'restore']);
+const { openSettings } = useSettingsModal();
 </script>
 
 <template>
-  <div class="flex items-center justify-between mt-2">
-    <div class="container flex flex-col items-start gap-1 py-2">
-      <h1
-        class="text-3xl flex items-center gap-2 font-bold leading-tight tracking-tighter lg:leading-[1.1]"
-      >
-        Hello
-        <Icon name="hugeicons:waving-hand-01" />
-      </h1>
-      <p class="max-w-2xl text-lg font-light text-foreground">
-        Welcome to your workspaces
-      </p>
+  <div class="flex items-center gap-2">
+    <div class="relative flex-1 min-w-0">
+      <Icon
+        name="hugeicons:search-01"
+        class="absolute left-2.5 -translate-y-1/2 top-1/2 size-4"
+      />
+      <Input
+        type="text"
+        v-model="search"
+        placeholder="Search workspaces..."
+        class="pl-10 w-full h-8"
+      />
     </div>
     <div class="flex items-center gap-2 shrink-0">
       <Button
@@ -35,7 +41,6 @@ const emit = defineEmits(['create', 'restore']);
       </Button>
       <Button
         v-if="isShowButtonCreate"
-        id="tour-new-workspace-btn"
         variant="outline"
         size="sm"
         @click="emit('create')"
@@ -43,6 +48,19 @@ const emit = defineEmits(['create', 'restore']);
         <Icon name="lucide:plus" />
         New Workspace
       </Button>
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            type="button"
+            variant="ghost"
+            size="iconSm"
+            @click="openSettings()"
+          >
+            <Icon name="hugeicons:settings-01" class="size-4!" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent> Settings </TooltipContent>
+      </Tooltip>
     </div>
   </div>
 </template>

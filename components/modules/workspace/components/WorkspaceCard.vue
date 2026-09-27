@@ -84,9 +84,9 @@ const {
     v-if="isOpenDeleteModal"
   />
 
-  <Card class="gap-4 justify-between!">
+  <Card class="w-full min-w-0 py-4 gap-3 rounded-lg justify-between!">
     <CardHeader class="flex justify-between px-4">
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center space-x-2 min-w-0">
         <Avatar>
           <AvatarFallback>
             <Icon :name="workspace.icon" class="size-5!" />
@@ -100,7 +100,7 @@ const {
 
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Button size="icon" variant="ghost">
+          <Button size="iconSm" variant="ghost">
             <Icon name="hugeicons:more-vertical-circle-01" class="size-4!" />
           </Button>
         </DropdownMenuTrigger>
@@ -161,7 +161,6 @@ const {
     <CardFooter class="px-4">
       <Select v-model:open="isOpenConnectionSelector">
         <Button
-          :id="`tour-open-workspace-${workspace.id}`"
           ref="dropdownTriggerRef"
           variant="default"
           class="w-full flex items-center justify-between"

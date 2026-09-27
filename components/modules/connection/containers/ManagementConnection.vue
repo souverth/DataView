@@ -52,12 +52,7 @@ const handleDeleteConnection = (id: string) => {
             Manage your database connections in one place
           </p>
         </div>
-        <Button
-          id="tour-add-connection-btn"
-          size="sm"
-          variant="outline"
-          @click="onOpenAddConnectionModal"
-        >
+        <Button size="sm" variant="outline" @click="onOpenAddConnectionModal">
           <Icon name="lucide:plus" class="size-4!" />
           Add Connection
         </Button>

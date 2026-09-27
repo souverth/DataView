@@ -188,7 +188,6 @@ watch(testStatus, status => {
                 :style="{
                   gridTemplateColumns: `repeat(${availableConnectionMethods.length}, minmax(0, 1fr))`,
                 }"
-                id="tour-connection-method-tabs"
               >
                 <TabsTrigger
                   v-for="method in availableConnectionMethods"
@@ -196,16 +195,10 @@ watch(testStatus, status => {
                   :value="method"
                   class="cursor-pointer"
                 >
-                  <span
-                    v-if="method === EConnectionMethod.STRING"
-                    id="tour-connection-string-tab"
-                  >
+                  <span v-if="method === EConnectionMethod.STRING">
                     Connection String
                   </span>
-                  <span
-                    v-else-if="method === EConnectionMethod.FORM"
-                    id="tour-connection-form-tab"
-                  >
+                  <span v-else-if="method === EConnectionMethod.FORM">
                     Connection Form
                   </span>
                   <span v-else-if="method === EConnectionMethod.MANAGED">
@@ -588,7 +581,6 @@ watch(testStatus, status => {
                 Test
               </Button>
               <Button
-                id="tour-create-update-connection-btn"
                 type="submit"
                 size="sm"
                 :disabled="testStatus === 'testing' || !isFormValid"

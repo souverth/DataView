@@ -5,7 +5,6 @@ import CreateWorkspaceModal from '../components/CreateWorkspaceModal.vue';
 import RestoreDataModal from '../components/RestoreDataModal.vue';
 import WorkspaceCard from '../components/WorkspaceCard.vue';
 import WorkspaceHeader from '../components/WorkspaceHeader.vue';
-import { useWorkspaceTour } from '../hooks/useWorkspaceTour';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 
 const {
@@ -19,18 +18,7 @@ const {
   onSelectWorkspace,
 } = useWorkspaces();
 
-const { startTour } = useWorkspaceTour({
-  isOpenCreateWSModal,
-  isOpenSelectConnectionModal,
-  workspaceId,
-  workspaceStore,
-  onSelectWorkspace,
-});
-
 const isOpenRestoreDataModal = ref(false);
-
-const config = useRuntimeConfig();
-const ggFormLink = config.public.ggFormLink;
 </script>
 
 <template>
@@ -47,34 +35,17 @@ const ggFormLink = config.public.ggFormLink;
     :connections="connectionStore.getConnectionsByWorkspaceId(workspaceId)"
     :workspace-id="workspaceId"
   />
-  <div
-    id="tour-workspace-area"
-    class="flex flex-col h-full overflow-y-auto p-4 pt-0 space-y-4 relative"
-  >
+  <div class="flex flex-col h-full overflow-y-auto p-4 space-y-4 relative">
     <WorkspaceHeader
+      v-model:search="search"
       @create="isOpenCreateWSModal = true"
       @restore="isOpenRestoreDataModal = true"
       :is-show-button-create="!!mappedWorkspaces.length"
       :is-show-button-restore="!!mappedWorkspaces.length"
     />
 
-    <div class="flex items-center gap-2">
-      <div class="relative flex-1">
-        <Icon
-          name="hugeicons:search-01"
-          class="absolute left-2.5 -translate-y-1/2 top-1/2 size-4"
-        />
-        <Input
-          type="text"
-          v-model="search"
-          placeholder="Search workspaces..."
-          class="pl-10 w-full"
-        />
-      </div>
-    </div>
-
     <div
-      class="grid grid-cols-3 gap-4 overflow-y-auto"
+      class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),300px))] gap-4 justify-start"
       v-if="mappedWorkspaces.length"
     >
       <WorkspaceCard
@@ -89,12 +60,7 @@ const ggFormLink = config.public.ggFormLink;
       desc="There is nothing here to show. Let's create your first workspace."
     >
       <div class="flex items-center gap-2">
-        <Button
-          id="tour-new-workspace-btn-empty"
-          variant="default"
-          size="sm"
-          @click="isOpenCreateWSModal = true"
-        >
+        <Button variant="default" size="sm" @click="isOpenCreateWSModal = true">
           <Icon name="hugeicons:plus-sign" />
           New Workspace
         </Button>
@@ -106,26 +72,7 @@ const ggFormLink = config.public.ggFormLink;
           <Icon name="lucide:upload" />
           Restore Data
         </Button>
-        <Button variant="secondary" size="sm" @click="startTour">
-          <Icon name="hugeicons:book-open-02" />
-          Take a tour
-        </Button>
       </div>
     </BaseEmpty>
-
-    <Button class="fixed bottom-0 right-4 z-10" variant="secondary">
-      <a :href="ggFormLink" target="_blank">
-        <Icon name="hugeicons:chat-feedback-01" /> Give me Feedback
-      </a>
-    </Button>
-
-    <Button
-      class="fixed bottom-16 right-4"
-      variant="secondary"
-      @click="startTour"
-      title="Start Tour"
-    >
-      <Icon name="hugeicons:book-open-02" /> Take a tour
-    </Button>
   </div>
 </template>

@@ -40,7 +40,7 @@ useAppearance();
 const route = useRoute('workspaceId-connectionId');
 
 useHead({
-  title: 'Orca Query',
+  title: 'DataView',
 });
 
 // React to route changes and initial mount

@@ -4,8 +4,6 @@ import { getPlatformStorage } from './storage-adapter';
 export enum LocalStorageKey {
   /** Last changelog version seen by the user. Value: version string. */
   LAST_SEEN_VERSION = 'orcaq-last-seen-version',
-  /** Whether the user has completed the onboarding tour. Value: 'true'|'false'. */
-  HAS_SEEN_TOUR = 'orcaq-has-seen-tour',
   /** Expanded node IDs for the agent history sidebar tree. Value: JSON string[]. */
   AGENT_HISTORY_TREE = 'agent-history-tree',
   /** Whether the download banner has been dismissed. Value: 'true'|'false'. */

@@ -115,10 +115,7 @@ useHotkeys([
     </DialogHeader>
 
     <div class="flex-1 overflow-y-auto px-6 pb-4 pt-1">
-      <div
-        id="tour-database-type-cards"
-        class="grid grid-cols-2 gap-3 py-2 md:grid-cols-4"
-      >
+      <div class="grid grid-cols-2 gap-3 py-2 md:grid-cols-4">
         <DatabaseTypeCard
           v-for="option in databaseOptions"
           :key="`${option.type}-${option.managedProvider ?? 'default'}`"
@@ -139,12 +136,7 @@ useHotkeys([
       <Button variant="outline" @click="$emit('close')" size="sm">
         Cancel
       </Button>
-      <Button
-        id="tour-database-type-next"
-        @click="$emit('next')"
-        :disabled="!dbType"
-        size="sm"
-      >
+      <Button @click="$emit('next')" :disabled="!dbType" size="sm">
         Next <Icon name="hugeicons:arrow-right-02" />
       </Button>
     </DialogFooter>
